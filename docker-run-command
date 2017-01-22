@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -e
+
+MY_DOCKER_IMAGE=$1;
+MY_DOCKER_COMMAND="${@:2:1}";
+MY_DOCKER_OPTIONS="${@:3}";
+
+if [ -z "$MY_DOCKER_IMAGE" ] || [ -z "$MY_DOCKER_COMMAND" ]
+then
+        echo "docker-run-app imagename command options";
+        exit 1;
+fi
+
+#docker pull $MY_DOCKER_IMAGE;
+
+MY_DOCKER_RUN="docker run  
+    -i
+    -t
+    -w=/app     
+    --volume `pwd`:/app
+    --volume $SSH_AUTH_SOCK:/ssh-agent
+    --volume /home/`whoami`/.ssh/known_hosts:/root/.ssh/known_hosts
+    --volume /home/`whoami`/.ssh/id_rsa:/root/.ssh/id_rsa
+    --env SSH_AUTH_SOCK=/ssh-agent
+    --rm
+    $MY_DOCKER_OPTIONS"
+
+
+
+$MY_DOCKER_RUN $MY_DOCKER_IMAGE bash -c "umask 000 && $MY_DOCKER_COMMAND"
